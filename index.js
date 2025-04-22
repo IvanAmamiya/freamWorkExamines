@@ -1,14 +1,13 @@
-import Bind from "./bind";
+import Bind from './bind.js';
 
-// 遍历document后绑定。
-// 新增的element怎么办 待思考。
+document.addEventListener('DOMContentLoaded', () => {
+  const appElement = document.querySelector('#app');
 
-const bind = new Bind();
-
-class App {
-    constructor(){
-        bind();
+  const app = new Bind({
+    element: appElement,
+    data: {
+      name: 'Alice',
+      age: 25
     }
-}
-
-export default App;
+  });
+});

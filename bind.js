@@ -13,7 +13,6 @@ class Bind {
     // 使用 Proxy 监听数据变化
     this.proxyData = new Proxy(this.data, {
       get: (target, key) => {
-        console.log(`读取属性: ${key}`); // 日志记录
         return target[key];
       },
       set: (target, key, value) => {
@@ -36,19 +35,27 @@ class Bind {
   }
 
   initView() {
-    const inputs = this.bindElement.querySelectorAll("[data-bind]");
-    inputs.forEach((input) => {
-      const key = input.getAttribute("data-bind");
+    const elements = this.bindElement.querySelectorAll("[data-bind]");
+    elements.forEach((element) => {
+      const key = element.getAttribute("data-bind");
       if (key && key in this.proxyData) {
-        input.value = this.proxyData[key]; // 初始化输入框的值
+        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
+          element.value = this.proxyData[key]; // 初始化输入框的值
+        } else {
+          element.textContent = this.proxyData[key]; // 初始化其他元素的文本内容
+        }
       }
     });
   }
 
   updateView(key, value) {
-    const inputs = this.bindElement.querySelectorAll(`[data-bind="${key}"]`);
-    inputs.forEach((input) => {
-      input.value = value; // 更新输入框的值
+    const elements = this.bindElement.querySelectorAll(`[data-bind="${key}"]`);
+    elements.forEach((element) => {
+      if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
+        element.value = value; // 更新输入框的值
+      } else {
+        element.textContent = value; // 更新其他元素的文本内容
+      }
     });
   }
 }
