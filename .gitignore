@@ -1,2 +1,11 @@
-# Ignore recruit folder
+# Ignore recruit folder and its contents
 recruit/
+
+# Ignore generated HTML files
+*.html
+
+# Ignore node_modules
+node_modules/
+
+# Ignore package-lock.json
+package-lock.json

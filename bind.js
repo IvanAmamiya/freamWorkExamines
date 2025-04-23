@@ -60,4 +60,55 @@ class Bind {
   }
 }
 
+class GlobalState {
+  constructor(initialState = {}) {
+    this.state = new Proxy(initialState, {
+      set: (target, key, value) => {
+        target[key] = value;
+        this.notify(key);
+        return true;
+      },
+    });
+    this.listeners = {};
+  }
+
+  // Subscribe to state changes
+  subscribe(key, callback) {
+    if (!this.listeners[key]) {
+      this.listeners[key] = [];
+    }
+    this.listeners[key].push(async (newValue) => {
+      try {
+        await callback(newValue);
+      } catch (error) {
+        console.error(`Error in async callback for key "${key}":`, error);
+      }
+    });
+  }
+
+  // Notify listeners of state changes
+  notify(key) {
+    if (this.listeners[key]) {
+      this.listeners[key].forEach((callback) => {
+        callback(this.state[key]);
+      });
+    }
+  }
+
+  // Get the current state
+  getState() {
+    return this.state;
+  }
+
+  // Set a new state value
+  setState(key, value) {
+    this.state[key] = value;
+  }
+}
+
+export const globalState = new GlobalState({
+  name: "John Doe",
+  age: 30,
+});
+
 export default Bind;
