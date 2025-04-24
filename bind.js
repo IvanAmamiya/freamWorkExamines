@@ -1,36 +1,41 @@
 class Bind {
   constructor(options = {}) {
-    this.data = options.data || {}; // 数据对象
-    this.bindElement = options.element || null; // 绑定的DOM元素
-    this.init();
+    this.data = options.data || {}; // Data object
+    this.bindElement = options.element || null; // Bound DOM element
+    this.init(options); // Pass options to init
   }
 
-  init() {
+  init(options = {}) {
     if (!this.bindElement) {
-      throw new Error("绑定的元素未指定");
+      throw new Error("No element specified for binding");
     }
 
-    // 使用 Proxy 监听数据变化
+    // Make proxyData accessible globally for external access
+    if (options.exportToWindow) {
+      window.proxyData = this.proxyData;
+    }
+
+    // Use Proxy to observe data changes
     this.proxyData = new Proxy(this.data, {
       get: (target, key) => {
         return target[key];
       },
       set: (target, key, value) => {
         target[key] = value;
-        this.updateView(key, value); // 更新视图
+        this.updateView(key, value); // Update the view
         return true;
       },
     });
 
-    // 初始化绑定事件
+    // Initialize input event binding
     this.bindElement.addEventListener("input", (event) => {
       const key = event.target.getAttribute("data-bind");
       if (key && key in this.proxyData) {
-        this.proxyData[key] = event.target.value; // 更新数据
+        this.proxyData[key] = event.target.value; // Update data
       }
     });
 
-    // 初始化视图
+    // Initialize the view
     this.initView();
   }
 
@@ -40,9 +45,9 @@ class Bind {
       const key = element.getAttribute("data-bind");
       if (key && key in this.proxyData) {
         if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-          element.value = this.proxyData[key]; // 初始化输入框的值
+          element.value = this.proxyData[key]; // Initialize input value
         } else {
-          element.textContent = this.proxyData[key]; // 初始化其他元素的文本内容
+          element.textContent = this.proxyData[key]; // Initialize other element text
         }
       }
     });
@@ -52,13 +57,26 @@ class Bind {
     const elements = this.bindElement.querySelectorAll(`[data-bind="${key}"]`);
     elements.forEach((element) => {
       if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-        element.value = value; // 更新输入框的值
+        element.value = value; // Update input value
       } else {
-        element.textContent = value; // 更新其他元素的文本内容
+        element.textContent = value; // Update other element text
       }
     });
   }
+
+  // Allow external code to get/set proxyData directly
+  get(key) {
+    return this.proxyData[key];
+  }
+
+  set(key, value) {
+    this.proxyData[key] = value;
+  }
 }
+
+Bind.install = function(options) {
+  return new Bind(options);
+};
 
 class GlobalState {
   constructor(initialState = {}) {
@@ -106,9 +124,14 @@ class GlobalState {
   }
 }
 
-export const globalState = new GlobalState({
+GlobalState.install = function(options) {
+  return globalState;
+};
+
+const globalState = new GlobalState({
   name: "John Doe",
   age: 30,
 });
 
 export default Bind;
+export { GlobalState, globalState };

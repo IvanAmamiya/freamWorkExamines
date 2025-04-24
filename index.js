@@ -1,40 +1,32 @@
+import { createApp } from './app.js';
 import Bind from './bind.js';
 import { globalState } from './bind.js';
 import { subscribeToState, updateStateAsync } from './examples.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const appElement = document.querySelector('#app');
+// Create the application instance
+const app = createApp();
 
-  const app = new Bind({
-    element: appElement,
-    data: {
-      name: 'Alice',
-      age: 25
-    }
-  });
-
-  // Initialize subscriptions
-  subscribeToState();
-
-  // Example: Update state asynchronously
-  (async () => {
-    await updateStateAsync('name', 'Async Name');
-    await updateStateAsync('age', 35);
-  })();
-
-  // Example: Update state
-  const nameInput = document.querySelector('#nameInput');
-  const ageInput = document.querySelector('#ageInput');
-
-  nameInput.addEventListener('input', (event) => {
-    globalState.setState('name', event.target.value);
-  });
-
-  ageInput.addEventListener('input', (event) => {
-    globalState.setState('age', event.target.value);
-  });
-
-  // Initialize inputs with current state
-  nameInput.value = globalState.getState().name;
-  ageInput.value = globalState.getState().age;
+// Use the Bind plugin for data binding, and keep the instance for global access
+const bindInstance = app.use(Bind, {
+  element: document.querySelector('#app'),
+  data: {
+    name: 'Alice',
+    age: 25,
+  },
 });
+
+// Use the global state management plugin
+app.use(globalState);
+
+// Expose proxyData and globalState to window for access in index.html scripts
+window.proxyData = bindInstance && bindInstance.proxyData ? bindInstance.proxyData : null;
+window.globalState = globalState;
+
+// Initialize subscriptions to state changes
+subscribeToState();
+
+// Example: Update state asynchronously
+(async () => {
+  await updateStateAsync('name', 'Async Name');
+  await updateStateAsync('age', 35);
+})();
