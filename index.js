@@ -20,7 +20,8 @@ const bindInstance = app.use(Bind, {
 app.use(globalState);
 
 // Expose proxyData and globalState to window for access in index.html scripts
-window.proxyData = bindInstance && bindInstance.proxyData ? bindInstance.proxyData : null;
+// 不再挂载 window.proxyData
+// window.globalState 仍可保留用于全局状态访问
 window.globalState = globalState;
 
 // Initialize subscriptions to state changes
