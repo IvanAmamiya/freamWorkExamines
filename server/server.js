@@ -3,7 +3,19 @@ const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  let filePath;
+  if (req.url === '/' || req.url === '/index.html') {
+    filePath = path.join(__dirname, '../src/index.html');
+  } else if (req.url.startsWith('/src/')) {
+    filePath = path.join(__dirname, '..', req.url);
+  } else if (req.url.startsWith('/server/')) {
+    filePath = path.join(__dirname, '..', req.url);
+  } else if (req.url.startsWith('/recruit/')) {
+    filePath = path.join(__dirname, '..', req.url);
+  } else {
+    // 兼容根目录下的 js/css 等
+    filePath = path.join(__dirname, '..', req.url);
+  }
   const extname = path.extname(filePath);
   let contentType = 'text/html';
 
@@ -22,6 +34,15 @@ const server = http.createServer((req, res) => {
       break;
     case '.jpg':
       contentType = 'image/jpg';
+      break;
+    case '.pdf':
+      contentType = 'application/pdf';
+      break;
+    case '.md':
+      contentType = 'text/markdown';
+      break;
+    case '.html':
+      contentType = 'text/html';
       break;
   }
 

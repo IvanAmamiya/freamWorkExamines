@@ -1,4 +1,4 @@
-import { globalState } from './core/globalState.js';
+import { globalState } from '../core/globalState.js';
 
 // Example: Subscribe to state changes
 export function subscribeToState() {
