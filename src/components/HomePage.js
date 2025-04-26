@@ -22,4 +22,18 @@ export class HomePage extends BindComponent {
     // 构造完成后延迟初始化 Bind
     this._initBind();
   }
+
+  connectedCallback() {
+    // 组件内订阅全局状态示例
+    if (window.globalState) {
+      window.globalState.subscribe('name', (newValue) => {
+        this.name = newValue;
+        if (this._bind) this._bind.updateView('name', newValue);
+      });
+      window.globalState.subscribe('age', (newValue) => {
+        this.age = newValue;
+        if (this._bind) this._bind.updateView('age', newValue);
+      });
+    }
+  }
 }
