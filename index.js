@@ -2,6 +2,7 @@ import { createApp } from './app.js';
 import Bind from './bind.js';
 import { globalState } from './bind.js';
 import { subscribeToState, updateStateAsync } from './examples.js';
+import { registerRouter } from './router.js';
 
 // Create the application instance
 const app = createApp();
@@ -31,17 +32,5 @@ subscribeToState();
   await updateStateAsync('age', 35);
 })();
 
-// 检查并避免重复渲染根组件内容
-const appRoot = document.querySelector('#app');
-if (appRoot && !appRoot.hasChildNodes()) {
-  appRoot.innerHTML = `
-    <p>Name: <span data-bind="name"></span></p>
-    <p>Age: <span data-bind="age"></span></p>
-    <p>
-      Update Name: <input data-bind="name" type="text">
-    </p>
-    <p>
-      Update Age: <input data-bind="age" type="number">
-    </p>
-  `;
-}
+// 只注册新路由，不再直接操作 #app.innerHTML
+registerRouter('app');
