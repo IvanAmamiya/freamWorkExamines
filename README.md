@@ -1,36 +1,47 @@
-# Global State Management
+# Bind Framework Demo
 
-This project demonstrates a simple global state management system using JavaScript's `Proxy` and a publish-subscribe pattern.
+本项目演示了一个基于原生 Web Components 和 Proxy 的响应式全局状态管理与组件化开发框架。
 
-## Files
+## 主要特性
+- **响应式数据绑定**：通过 `Bind` 框架实现数据与视图的自动同步。
+- **全局状态管理**：支持全局状态订阅与异步更新。
+- **自定义组件体系**：所有组件继承自统一基类（如 `BindComponent`），支持嵌套、插槽和样式隔离。
+- **简易路由系统**：基于 hash 的路由，支持页面级组件切换。
+- **模块化开发**：每个组件单独文件，统一注册，便于维护和扩展。
 
-- **bind.js**: Contains the `GlobalState` class for managing global state and notifying listeners of changes.
-- **examples.js**: Provides examples of how to use the `GlobalState` class, including subscribing to state changes and updating state asynchronously.
-- **index.js**: Initializes the application and demonstrates how to bind state to DOM elements.
-- **index.html**: The main HTML file for the application.
+## 目录结构
+- `index.html`：入口 HTML，挂载根组件。
+- `index.js`：应用初始化、全局状态、数据绑定、路由注册。
+- `bind.js`：核心数据绑定与全局状态实现。
+- `BindComponent.js`：组件基类，自动集成数据绑定。
+- `AppRoot.js`：根组件，包含 `<router-view>`。
+- `HomePage.js`：首页组件，演示数据绑定。
+- `MyPanel.js`、`MyButton.js`：UI 组件示例。
+- `router.js`：路由表与路由渲染逻辑。
+- `components.js`：统一注册所有自定义组件。
+- `examples.js`：全局状态订阅与异步更新示例。
+- `server.js`：本地开发静态服务器。
 
-## Usage
+## 快速开始
+1. 启动本地服务器：
+   ```bash
+   node server.js
+   ```
+2. 浏览器访问 `http://localhost:3000/#/` 查看首页。
+3. 切换到 `#/about` 查看关于页面。
 
-1. Clone the repository.
-2. Open `index.html` in a browser to see the application in action.
-3. Modify `examples.js` to add more examples or test different use cases.
+## 组件开发说明
+- 新建组件时继承 `BindComponent`，在构造函数中传递 `data` 选项即可自动获得数据绑定能力。
+- 通过 `<slot>` 支持内容分发，实现灵活嵌套。
+- 组件注册统一在 `components.js` 完成。
 
-## Features
+## 路由说明
+- 路由表在 `router.js` 中维护，支持自定义页面组件。
+- 仅支持 hash 路由（如 `#/about`），无需服务器端支持。
 
-- Reactive state management using `Proxy`.
-- Publish-subscribe pattern for state change notifications.
-- Asynchronous state updates.
+## 其他
+- 支持自定义 UI 组件、页面级组件、全局状态管理等扩展。
+- 适合学习原生组件化、响应式框架原理。
 
-## Example Code
-
-### Subscribing to State Changes
-```javascript
-import { subscribeToState } from './examples.js';
-subscribeToState();
-```
-
-### Updating State Asynchronously
-```javascript
-import { updateStateAsync } from './examples.js';
-await updateStateAsync('name', 'New Name');
-```
+---
+如需更多示例或扩展，欢迎提 Issue 或 PR。
