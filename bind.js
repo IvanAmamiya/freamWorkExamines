@@ -1,53 +1,65 @@
 class Bind {
   constructor(options = {}) {
-    this.data = options.data || {}; // Data object
+    this.component = options.component || null; // 组件实例
     this.bindElement = options.element || null; // Bound DOM element
-    this.init(options); // Pass options to init
+    this._validateAndInit();
   }
 
-  init(options = {}) {
+  _validateAndInit() {
     if (!this.bindElement) {
       throw new Error("No element specified for binding");
     }
-
-    // Make proxyData accessible globally for external access
-    if (options.exportToWindow) {
-      window.proxyData = this.proxyData;
+    if (!this.component) {
+      throw new Error("No component instance specified for binding");
     }
-
-    // Use Proxy to observe data changes
+    // 自动收集组件实例上的自有属性作为响应式数据
+    this.data = {};
+    Object.getOwnPropertyNames(this.component).forEach(key => {
+      // 只收集非函数属性
+      if (typeof this.component[key] !== 'function') {
+        this.data[key] = this.component[key];
+      }
+    });
+    // 检查 DOM 上所有 data-bind 是否都在组件实例属性里
+    const elements = this.bindElement.querySelectorAll('[data-bind]');
+    elements.forEach((element) => {
+      const key = element.getAttribute('data-bind');
+      if (!(key in this.data)) {
+        throw new Error(`Bind error: data-bind=\"${key}\" 未在组件实例上声明!`);
+      }
+    });
+    // 用 Proxy 监听数据变动，直接代理到组件实例属性
     this.proxyData = new Proxy(this.data, {
-      get: (target, key) => {
-        return target[key];
-      },
+      get: (target, key) => this.component[key],
       set: (target, key, value) => {
-        target[key] = value;
-        this.updateView(key, value); // Update the view
+        if (!(key in this.component)) {
+          throw new Error(`Bind error: 尝试设置未声明的响应式变量 \"${key}\"`);
+        }
+        this.component[key] = value;
+        this.updateView(key, value);
         return true;
       },
     });
-
-    // Initialize input event binding
-    this.bindElement.addEventListener("input", (event) => {
-      const key = event.target.getAttribute("data-bind");
+    // 绑定 input 事件
+    this.bindElement.addEventListener('input', (event) => {
+      const key = event.target.getAttribute('data-bind');
       if (key && key in this.proxyData) {
-        this.proxyData[key] = event.target.value; // Update data
+        this.proxyData[key] = event.target.value;
       }
     });
-
-    // Initialize the view
+    // 初始化视图
     this.initView();
   }
 
   initView() {
-    const elements = this.bindElement.querySelectorAll("[data-bind]");
+    const elements = this.bindElement.querySelectorAll('[data-bind]');
     elements.forEach((element) => {
-      const key = element.getAttribute("data-bind");
+      const key = element.getAttribute('data-bind');
       if (key && key in this.proxyData) {
-        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-          element.value = this.proxyData[key]; // Initialize input value
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+          element.value = this.proxyData[key];
         } else {
-          element.textContent = this.proxyData[key]; // Initialize other element text
+          element.textContent = this.proxyData[key];
         }
       }
     });
@@ -56,20 +68,22 @@ class Bind {
   updateView(key, value) {
     const elements = this.bindElement.querySelectorAll(`[data-bind="${key}"]`);
     elements.forEach((element) => {
-      if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-        element.value = value; // Update input value
+      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+        element.value = value;
       } else {
-        element.textContent = value; // Update other element text
+        element.textContent = value;
       }
     });
   }
 
-  // Allow external code to get/set proxyData directly
   get(key) {
     return this.proxyData[key];
   }
 
   set(key, value) {
+    if (!(key in this.proxyData)) {
+      throw new Error(`Bind error: 尝试设置未声明的响应式变量 \"${key}\"`);
+    }
     this.proxyData[key] = value;
   }
 }
