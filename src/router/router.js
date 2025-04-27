@@ -9,7 +9,13 @@ export const routes = {
   },
 };
 
-export function registerRouter(appRootId = 'app') {
+// 路由工厂函数，依赖注入路由表
+export function createRouter(routes) {
+  return { routes };
+}
+
+// 注册路由监听和渲染
+export function registerRouter(router, appRootId = 'app') {
   async function renderRoute() {
     const path = location.hash.replace(/^#/, '') || '/';
     const appRoot = document.getElementById(appRootId);
@@ -18,7 +24,7 @@ export function registerRouter(appRootId = 'app') {
     if (!appRootEl || !appRootEl.shadowRoot) return;
     const routerView = appRootEl.shadowRoot.querySelector('router-view');
     if (!routerView) return;
-    const render = routes[path] || (async () => '<my-panel>404 Not Found</my-panel>');
+    const render = router.routes[path] || (async () => '<my-panel>404 Not Found</my-panel>');
     routerView.innerHTML = await render();
   }
   window.addEventListener('hashchange', renderRoute);
